@@ -5,7 +5,7 @@ import { PromptTemplate } from 'langchain/prompts';
 import { CallbackManager } from 'langchain/callbacks';
 
 const CONDENSE_PROMPT =
-  PromptTemplate.fromTemplate(`Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question.
+  PromptTemplate.fromTemplate(`Étant donné la conversation suivante et une question de suivi, reformulez la question de suivi pour qu'elle soit une question indépendante. Répondez en français.
 
 Chat History:
 {chat_history}
@@ -13,16 +13,16 @@ Follow Up Input: {question}
 Standalone question:`);
 
 const QA_PROMPT = PromptTemplate.fromTemplate(
-  `You are an AI assistant providing helpful advice. You are given the following extracted parts of a long document and a question. Provide a conversational answer based on the context provided.
-You should only provide hyperlinks that reference the context below. Do NOT make up hyperlinks.
-If you can't find the answer in the context below, just say "Hmm, I'm not sure." Don't try to make up an answer.
-If the question is not related to the context, politely respond that you are tuned to only answer questions that are related to the context.
+  `Vous êtes un assistant IA fournissant des conseils utiles. On vous donne les extraits suivants d'un long document et une question. Fournissez une réponse conversationnelle basée sur le contexte fourni.
+Vous ne devez fournir que des hyperliens faisant référence au contexte ci-dessous. Ne faites PAS de liens hypertexte inventés.
+Si vous ne pouvez pas trouver la réponse dans le contexte ci-dessous, dites simplement "Je ne suis pas sûr d'avoir compris votre requête, pouvez-vous la reformuler ?". N'essayez pas de donner une réponse inventée.
+Si la question n'est pas liée au contexte, répondez poliment que vous êtes programmé pour répondre uniquement aux questions qui sont liées au contexte.
 
 Question: {question}
 =========
 {context}
 =========
-Answer in Markdown:`,
+Réponse en langage markdown:`,
 );
 
 export const makeChain = (
@@ -36,7 +36,7 @@ export const makeChain = (
   const docChain = loadQAChain(
     new OpenAIChat({
       temperature: 0,
-      modelName: 'gpt-4', //change this to older versions (e.g. gpt-3.5-turbo) if you don't have access to gpt-4
+      modelName: 'gpt-3.5-turbo', //change this to older versions (e.g. gpt-3.5-turbo) if you don't have access to gpt-4
       streaming: Boolean(onTokenStream),
       callbackManager: onTokenStream
         ? CallbackManager.fromHandlers({
@@ -54,7 +54,7 @@ export const makeChain = (
     vectorstore,
     combineDocumentsChain: docChain,
     questionGeneratorChain: questionGenerator,
-    returnSourceDocuments: true,
-    k: 2, //number of source documents to return
+    returnSourceDocuments: false,
+    k: 3, //number of source documents to return
   });
 };
