@@ -14,16 +14,14 @@ export const run = async () => {
     /*load raw docs from the all files in the directory */
     const directoryLoader = new DirectoryLoader(filePath, {
       '.pdf': (path) => new CustomPDFLoader(path),
-      '.api': (path) => new TextLoader(path),
-      '.php': (path) => new TextLoader(path),
     });
 
     const rawDocs = await directoryLoader.load();
 
     /* Split text into chunks */
     const textSplitter = new RecursiveCharacterTextSplitter({
-      chunkSize: 1000,
-      chunkOverlap: 200,
+      chunkSize: 2500,
+      chunkOverlap: 750,
     });
 
     const docs = await textSplitter.splitDocuments(rawDocs);

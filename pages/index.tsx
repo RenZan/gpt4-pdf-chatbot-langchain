@@ -167,7 +167,7 @@ export default function Home() {
       <Layout>
         <div className="mx-auto flex flex-col gap-4">
         <h1 className="text-2xl font-bold leading-[1.1] tracking-tighter text-center">
-         Chat avec {PINECONE_NAME_SPACE}
+         Chat {PINECONE_NAME_SPACE}
         </h1>
           <main className={styles.main}>
             <div className={styles.cloud}>
@@ -178,7 +178,7 @@ export default function Home() {
                   if (message.type === 'apiMessage') {
                     icon = (
                       <Image
-                        src="/bot-image.png"
+                        src="/allmybanks.png"
                         alt="AI"
                         width="40"
                         height="40"
@@ -190,10 +190,10 @@ export default function Home() {
                   } else {
                     icon = (
                       <Image
-                        src="/usericon.png"
+                        src="/user.png"
                         alt="Me"
-                        width="30"
-                        height="30"
+                        width="40"
+                        height="40"
                         className={styles.usericon}
                         priority
                       />

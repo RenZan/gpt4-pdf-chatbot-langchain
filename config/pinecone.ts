@@ -8,6 +8,6 @@
 
 const PINECONE_INDEX_NAME = process.env.PINECONE_INDEX_NAME ?? '';
 
-const PINECONE_NAME_SPACE = 'exalog'; //namespace is optional for your vectors
+const PINECONE_NAME_SPACE = process.env.PINECONE_NAME_SPACE ?? '';
 
 export { PINECONE_INDEX_NAME, PINECONE_NAME_SPACE };
