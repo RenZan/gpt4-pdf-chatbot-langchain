@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useRef, useState, useEffect, useMemo, useCallback } from 'react';
 import Layout from '@/components/layout';
 import styles from '@/styles/Home.module.css';
 import { Message } from '@/types/chat';
@@ -205,8 +205,8 @@ export default function Home() {
                         : styles.usermessage;
                   }
                   return (
-                    <>
-                      <div key={`chatMessage-${index}`} className={className}>
+                    <React.Fragment key={`chatMessage-${index}`}>
+                      <div className={className}>
                         {icon}
                         <div className={styles.markdownanswer}>
                           <ReactMarkdown linkTarget="_blank">
@@ -224,11 +224,11 @@ export default function Home() {
                             collapsible
                             className="flex-col"
                           >
-                            {message.sourceDocs.map((doc, index) => (
-                              <div key={`messageSourceDocs-${index}`}>
-                                <AccordionItem value={`item-${index}`}>
+                            {message.sourceDocs.map((doc, docIndex) => (
+                              <div key={`messageSourceDocs-${docIndex}`}>
+                                <AccordionItem value={`item-${docIndex}`}>
                                   <AccordionTrigger>
-                                    <h3>Source {index + 1}</h3>
+                                    <h3>Source {docIndex + 1}</h3>
                                   </AccordionTrigger>
                                   <AccordionContent>
                                     <ReactMarkdown linkTarget="_blank">
@@ -244,7 +244,7 @@ export default function Home() {
                           </Accordion>
                         </div>
                       )}
-                    </>
+                    </React.Fragment>
                   );
                 })}
                 {sourceDocs.length > 0 && (
