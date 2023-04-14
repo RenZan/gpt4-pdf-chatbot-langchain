@@ -1,59 +1,38 @@
-import { OpenAIChat } from 'langchain/llms';
-import { LLMChain, ChatVectorDBQAChain, loadQAChain } from 'langchain/chains';
-import { PineconeStore } from 'langchain/vectorstores';
-import { PromptTemplate } from 'langchain/prompts';
-import { CallbackManager } from 'langchain/callbacks';
+import { OpenAI } from 'langchain/llms/openai';
+import { PineconeStore } from 'langchain/vectorstores/pinecone';
+import { ConversationalRetrievalQAChain } from 'langchain/chains';
 
-const CONDENSE_PROMPT =
-  PromptTemplate.fromTemplate(`Étant donné la conversation suivante et une question de suivi, si vous ne pouvez pas répondre avec succès à la question en vous servant de l'historique, reformulez la question de suivi pour qu'elle soit une question indépendante. Répondez en français.
+const CONDENSE_PROMPT = `Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question.
 
 Chat History:
 {chat_history}
 Follow Up Input: {question}
-Standalone question:`);
+Standalone question:`;
 
-const QA_PROMPT = PromptTemplate.fromTemplate(
-  `Vous êtes un assistant IA fournissant des conseils utiles. On vous donne les extraits suivants d'une base de connaissance et une question. Fournissez une réponse conversationnelle basée sur le contexte fourni. Si ça ne suffit pas, basez vous sur l'historique de la conversation.
-Si vous ne pouvez pas trouver la réponse dans le contexte ci-dessous, dites simplement "Je ne suis pas sûr d'avoir compris votre requête, pouvez-vous la reformuler ?". N'essayez pas de donner une réponse inventée.
-Si la question n'est pas liée au contexte de la base de connaissances, répondez poliment que vous êtes programmé pour répondre uniquement aux questions qui sont liées au contexte.
+const QA_PROMPT = `You are a helpful AI assistant. Use the following pieces of context to answer the question at the end.
+If you don't know the answer, just say you don't know. DO NOT try to make up an answer.
+If the question is not related to the context, politely respond that you are tuned to only answer questions that are related to the context.
+
+
+{context}
 
 Question: {question}
-=========
-{context}
-=========
-Réponse en langage md avec une mise en forme agréable:`,
-);
+Helpful answer in markdown:`;
 
-export const makeChain = (
-  vectorstore: PineconeStore,
-  onTokenStream?: (token: string) => void,
-) => {
-  const questionGenerator = new LLMChain({
-    llm: new OpenAIChat({ temperature: 0 }),
-    prompt: CONDENSE_PROMPT,
+export const makeChain = (vectorstore: PineconeStore) => {
+  const model = new OpenAI({
+    temperature: 0, // increase temepreature to get more creative answers
+    modelName: 'gpt-3.5-turbo', //change this to gpt-4 if you have access
   });
-  const docChain = loadQAChain(
-    new OpenAIChat({
-      temperature: 0.3,
-      modelName: 'gpt-3.5-turbo', //change this to older versions (e.g. gpt-3.5-turbo) if you don't have access to gpt-4
-      streaming: Boolean(onTokenStream),
-      callbackManager: onTokenStream
-        ? CallbackManager.fromHandlers({
-            async handleLLMNewToken(token) {
-              onTokenStream(token);
-              console.log(token);
-            },
-          })
-        : undefined,
-    }),
-    { prompt: QA_PROMPT },
+
+  const chain = ConversationalRetrievalQAChain.fromLLM(
+    model,
+    vectorstore.asRetriever(),
+    {
+      qaTemplate: QA_PROMPT,
+      questionGeneratorTemplate: CONDENSE_PROMPT,
+      returnSourceDocuments: true, //The number of source documents returned is 4 by default
+    },
   );
-
-  return new ChatVectorDBQAChain({
-    vectorstore,
-    combineDocumentsChain: docChain,
-    questionGeneratorChain: questionGenerator,
-    returnSourceDocuments: false,
-    k: 5, //number of source documents to return
-  });
+  return chain;
 };
